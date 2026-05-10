@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, clipboard, dialog } = require('electron')
+const { autoUpdater } = require('electron-updater')
 const path = require('path')
 const os = require('os')
 const fs = require('fs')
@@ -65,7 +66,14 @@ ipcMain.handle('open-txt', async (event) => {
   return { ok: true, content, name: path.basename(filePath) }
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow()
+  if (!isDev) {
+    autoUpdater.checkForUpdatesAndNotify().catch(err => {
+      console.error('Update check failed:', err)
+    })
+  }
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
